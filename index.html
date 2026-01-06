@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>赛博情感测试：你有多喜欢Ta？</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #111116;
+            --primary: #00f3ff; /* 赛博蓝 */
+            --secondary: #ff0055; /* 霓虹粉 */
+            --text-main: #ffffff;
+            --text-dim: #888899;
+            --border-glow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            /* 这种背景图模拟赛博网格 */
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* 核心容器：手机端铺满，电脑端居中 */
+        #app {
+            width: 100%;
+            max-width: 600px; /* 限制最大宽度，保证大屏体验 */
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(0,243,255,0.05) 0%, transparent 70%);
+        }
+
+        /* 通用标题样式 */
+        h1, h2, h3 {
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        /* ======= 欢迎页 ======= */
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .logo-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid var(--primary);
+            box-shadow: 0 0 20px var(--primary), inset 0 0 20px var(--primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background: #000;
+            color: var(--primary);
+            /* 这里预留放你的Logo图片 */
+            overflow: hidden; 
+        }
+        
+        .logo-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .glitch-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .sub-text {
+            color: var(--text-dim);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* ======= 按钮样式 ======= */
+        .cyber-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .cyber-btn:hover, .cyber-btn:active {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 30px var(--primary);
+        }
+
+        /* ======= 答题页 ======= */
+        .quiz-screen {
+            display: none; /* 默认隐藏 */
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #222;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--primary);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: var(--border-glow);
+            position: relative;
+            animation: slideUp 0.4s ease;
+        }
+        
+        /* 装饰角标 */
+        .corner {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-color: var(--secondary);
+            border-style: solid;
+        }
+        .tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+        .bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+        .br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            color: #fff;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #333;
+            padding: 15px;
+            text-align: left;
+            color: #ddd;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover, .option-btn:active {
+            border-color: var(--secondary);
+            background: rgba(255, 0, 85, 0.1);
+            color: #fff;
+        }
+
+        /* ======= 结果页 ======= */
+        .result-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.8s ease;
+            padding-bottom: 50px;
+        }
+
+        /* 动态圆环 */
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin: 20px 0 40px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .score-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: #222;
+            stroke-width: 10;
+        }
+
+        .circle-progress {
+            fill: none;
+            stroke: var(--secondary);
+            stroke-width: 10;
+            stroke-dasharray: 440; /* 2 * PI * 70 */
+            stroke-dashoffset: 440; /* 初始全空 */
+            transition: stroke-dashoffset 1.5s ease-out;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 5px var(--secondary));
+        }
+
+        .score-text {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--text-main);
+            text-shadow: 0 0 10px var(--secondary);
+        }
+        .score-label {
+            position: absolute;
+            top: 65%;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .result-title {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .result-card {
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .result-card h3 {
+            text-align: left;
+            margin: 0 0 10px 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .result-card p {
+            margin: 0;
+            line-height: 1.6;
+            color: #ddd;
+            font-size: 0.95rem;
+        }
+        
+        .solution-card {
+             border-left: 4px solid var(--secondary);
+        }
+        
+        .solution-card h3 {
+            color: var(--secondary);
+        }
+
+        /* 动画关键帧 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="logo-placeholder">
+            <span>LOGO</span> 
+        </div>
+        <div class="glitch-text">赛博情感测试</div>
+        <p class="sub-text">通过 35 道潜意识与行为分析题<br>精准测算你对Ta的“心动值”</p>
+        <button class="cyber-btn" onclick="startQuiz()">开始测试</button>
+    </div>
+
+    <div class="quiz-screen" id="quizScreen">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="question-card" id="questionCard">
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+            
+            <div class="question-text" id="questionText">加载中...</div>
+            <div class="options-list" id="optionsList">
+                </div>
+        </div>
+    </div>
+
+    <div class="result-screen" id="resultScreen">
+        <div class="score-circle">
+            <svg class="score-svg">
+                <circle cx="100" cy="100" r="70" class="circle-bg"></circle>
+                <circle cx="100" cy="100" r="70" class="circle-progress" id="circleProgress"></circle>
+            </svg>
+            <div class="score-text" id="finalScore">0</div>
+            <div class="score-label">心动值</div>
+        </div>
+
+        <h2 class="result-title" id="resultTitle">加载中</h2>
+
+        <div class="result-card">
+            <h3>状态诊断</h3>
+            <p id="resultDesc">...</p>
+        </div>
+
+        <div class="result-card solution-card">
+            <h3>大师指路</h3>
+            <p id="resultSolution">...</p>
+        </div>
+
+        <button class="cyber-btn" onclick="location.reload()" style="margin-top: 20px;">再测一次</button>
+    </div>
+</div>
+
+<script>
+    // ======= 1. 题库数据 (35题) =======
+    const questions = [
+        { q: "手机屏幕亮起，显示是Ta发来的消息，你的第一反应？", options: [{t:"忙完手头的事再回", s:1}, {t:"嘴角上扬，稍微晾一小会儿", s:3}, {t:"心跳漏拍，秒解锁秒回", s:5}] },
+        { q: "大家一起哄堂大笑时，你的眼睛会下意识看向谁？", options: [{t:"闭眼笑或看手机", s:1}, {t:"环顾四周，偶尔扫过Ta", s:3}, {t:"第一时间看向Ta", s:5}] },
+        { q: "不小心和Ta发生了肢体接触（碰到了手），你会？", options: [{t:"毫无波澜，甚至想擦手", s:1}, {t:"有点紧张，心里痒酥酥", s:3}, {t:"像触电一样，希望能更久", s:5}] },
+        { q: "看到很好的风景或吃到好吃的，你会？", options: [{t:"心情变好", s:1}, {t:"想着下次带朋友来", s:3}, {t:"第一念头：要是Ta在就好了", s:5}] },
+        { q: "闭上眼想象Ta的脸，清晰度是多少？", options: [{t:"360P，有点模糊", s:1}, {t:"720P，轮廓清楚", s:3}, {t:"4K HDR，连毛孔都清楚", s:5}] },
+        { q: "听到别人提起Ta的名字时，你的耳朵？", options: [{t:"自动过滤", s:1}, {t:"稍微竖起来听听", s:3}, {t:"雷达启动，精准捕捉", s:5}] },
+        { q: "见面时，你会忍不住盯着Ta看吗？", options: [{t:"尴尬，看手机", s:1}, {t:"偶尔偷看，对视会躲", s:3}, {t:"目光根本移不开", s:5}] },
+        { q: "发现Ta给别的异性朋友圈点赞互动，心情？", options: [{t:"无所谓", s:1}, {t:"有点酸，视奸那个异性", s:3}, {t:"醋坛子打翻，想质问", s:5}] },
+        { q: "你会经常翻看Ta的社交软件关注列表吗？", options: [{t:"从不，那是隐私", s:1}, {t:"刚认识翻过，现在偶尔", s:3}, {t:"当代福尔摩斯，挖地三尺", s:5}] },
+        { q: "如果Ta把你介绍给Ta的朋友圈子，你会？", options: [{t:"压力大，别搞这些", s:1}, {t:"小确幸，说明Ta认可我", s:3}, {t:"爽翻了，这是宣示主权", s:5}] },
+        { q: "Ta发了一条含糊不清的朋友圈，你会？", options: [{t:"划过去", s:1}, {t:"评论问一下", s:3}, {t:"疯狂做阅读理解，直接私聊", s:5}] },
+        { q: "朋友在你面前夸Ta特别优秀，你内心OS？", options: [{t:"也就那样吧", s:1}, {t:"那是我眼光好", s:3}, {t:"警铃大作！这人想跟我抢？", s:5}] },
+        { q: "看到Ta在线却一直没回你消息？", options: [{t:"忙就算了，我自己玩", s:1}, {t:"有点烦躁，总看手机", s:3}, {t:"脑补狗血剧，生闷气", s:5}] },
+        { q: "假如Ta有了对象（不是你），还能做朋友吗？", options: [{t:"可以啊", s:1}, {t:"慢慢疏远", s:3}, {t:"绝对不行！心碎了", s:5}] },
+        { q: "早上醒来前三个念头里，有Ta吗？", options: [{t:"没有，想上班/上学", s:1}, {t:"偶尔有", s:3}, {t:"经常有，醒来就看手机", s:5}] },
+        { q: "看到搞笑的沙雕视频，你会？", options: [{t:"笑死，划走", s:1}, {t:"收藏，攒多了发群里", s:3}, {t:"手指比脑子快，转发给Ta", s:5}] },
+        { q: "发呆时，脑子里会？", options: [{t:"一片空白", s:1}, {t:"复盘上次见面", s:3}, {t:"脑补各种甜蜜小剧场", s:5}] },
+        { q: "听到甜甜的情歌，你会？", options: [{t:"太假了", s:1}, {t:"有点想恋爱", s:3}, {t:"每一句唱的都是我和Ta", s:5}] },
+        { q: "遇到倒霉事心情差，你想找谁？", options: [{t:"自己消化", s:1}, {t:"最好的朋友", s:3}, {t:"特别想听Ta的声音", s:5}] },
+        { q: "觉得自己最近变矫情了吗？", options: [{t:"没有，我很稳", s:1}, {t:"稍微有一点", s:3}, {t:"判若两人，情绪被Ta掌控", s:5}] },
+        { q: "算命大师说你们八字不合，你会？", options: [{t:"那就不来往了", s:1}, {t:"心里有点疙瘩", s:3}, {t:"去他的！老子逆天改命", s:5}] },
+        { q: "Ta半夜说饿了/不舒服，你会？", options: [{t:"多喝热水早点睡", s:1}, {t:"点个外卖/陪聊", s:3}, {t:"已经在穿鞋准备送药了", s:5}] },
+        { q: "Ta突然约你，但你约了朋友开黑？", options: [{t:"下次吧", s:1}, {t:"纠结半天协调时间", s:3}, {t:"光速鸽了朋友去见Ta", s:5}] },
+        { q: "Ta有个你不太感兴趣的爱好，你？", options: [{t:"尊重但不参与", s:1}, {t:"愿意听，偶尔陪玩", s:3}, {t:"偷偷恶补知识找共同话题", s:5}] },
+        { q: "发现Ta有个你讨厌的缺点（如乱丢袜子）？", options: [{t:"下头，扣分", s:1}, {t:"吐槽，希望改改", s:3}, {t:"双标：其实还挺可爱的", s:5}] },
+        { q: "送Ta礼物的预算？", options: [{t:"随便买个几十块", s:1}, {t:"能力范围内买个不错的", s:3}, {t:"吃土也要买Ta最喜欢的", s:5}] },
+        { q: "为了在一起，愿意改变原则吗？", options: [{t:"不愿意", s:1}, {t:"小事可以妥协", s:3}, {t:"我的原则可弹性调整", s:5}] },
+        { q: "Ta要去吃排队2小时的网红店？", options: [{t:"疯了吧换一家", s:1}, {t:"行吧（不情愿）", s:3}, {t:"和你排队聊天也开心", s:5}] },
+        { q: "想到“未来”这个词，画面里？", options: [{t:"只有我自己", s:1}, {t:"好像有Ta但不确定", s:3}, {t:"C位必须是Ta", s:5}] },
+        { q: "能接受和Ta过平淡琐碎的生活吗？", options: [{t:"感觉会无聊", s:1}, {t:"应该可以吧", s:3}, {t:"那是向往的生活", s:5}] },
+        { q: "看到白头偕老的老夫妻视频？", options: [{t:"无感", s:1}, {t:"挺羡慕", s:3}, {t:"带入我和Ta老了的样子", s:5}] },
+        { q: "Ta向你借一大笔钱（非诈骗）？", options: [{t:"拒绝，谈钱伤感情", s:1}, {t:"借一部分", s:3}, {t:"毫不犹豫，人比钱重要", s:5}] },
+        { q: "Ta要去异地发展？", options: [{t:"祝一路顺风", s:1}, {t:"尝试异地恋", s:3}, {t:"考虑辞职跟Ta去", s:5}] },
+        { q: "Ta是你的理想型吗？", options: [{t:"差挺远", s:1}, {t:"部分符合", s:3}, {t:"Ta就是标准", s:5}] },
+        { q: "如果让你删了Ta永不联系？", options: [{t:"有点可惜", s:1}, {t:"会难过一阵", s:3}, {t:"窒息，像丢了半条命", s:5}] }
+    ];
+
+    // ======= 2. 档位数据 =======
+    const results = [
+        { max: 20, title: "电子木鱼", desc: "心动信号丢失。Ta在你的世界里就是一个NPC，你看着Ta内心毫无波澜。这不是爱情，这叫“众生平等”。", sol: "《施主，请放下》建议把时间用来打游戏或者搞钱，别在一个路人身上浪费算力。" },
+        { max: 40, title: "气氛组选手", desc: "检测到微弱好感。就像逛街看到一件还行的衣服，打折会买，原价就算了。你喜欢的不是Ta，是那种被陪伴的感觉。", sol: "《谨防错觉》问问自己是寂寞还是动心？敌不动我不动，别自我感动。" },
+        { max: 60, title: "薛定谔的心动", desc: "系统逻辑混乱。有时候觉得Ta发光，有时候觉得“就这”。你在“冲一波”和“算了吧”之间反复横跳，像信号不好的WiFi。", sol: "《增加变量》搞点小动作试探一下（如半天不回消息）。没反应就撤，急了就冲！" },
+        { max: 75, title: "恋爱脑正在生长", desc: "警报！智商下线。看到消息会姨母笑，已经开始脑补旅游画面。只要Ta勾勾手，你可能就要跟人跑了。", sol: "《趁热打铁》别装高冷了！现在最适合打直球，制造独处机会，窗户纸就差这一指头。" },
+        { max: 90, title: "焊死在车门上", desc: "恭喜彻底沦陷。在你滤镜里，Ta放个屁都是香草味的。这不是简单的喜欢，是DNA都已经螺旋纠缠在一起了。", sol: "《直接锁死》这种程度不结婚很难收场。直接进入宣示主权阶段，渗透进Ta的生活圈！" },
+        { max: 101, title: "病娇晚期", desc: "危险！占有欲爆表！你恨不得把Ta揣口袋里。你可能已经在想以后埋哪块墓地了。这对你来说不是恋爱，是信仰。", sol: "《控制一下》宝，太满的爱有压力。策略是“外冷内热”，爱自己多一点，蝴蝶自来。" }
+    ];
+
+    // ======= 3. 逻辑控制 =======
+    let currentQIndex = 0;
+    let totalScore = 0;
+    // 理论最高分：35题 * 5分 = 175分
+    const MAX_POSSIBLE_SCORE = 35 * 5; 
+    const MIN_POSSIBLE_SCORE = 35 * 1;
+
+    function startQuiz() {
+        document.getElementById('welcomeScreen').style.display = 'none';
+        document.getElementById('quizScreen').style.display = 'flex';
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const qData = questions[currentQIndex];
+        document.getElementById('questionText').innerHTML = `${currentQIndex + 1}. ${qData.q}`;
+        
+        const list = document.getElementById('optionsList');
+        list.innerHTML = ''; // 清空
+
+        // 更新进度条
+        const progress = ((currentQIndex) / questions.length) * 100;
+        document.getElementById('progressFill').style.width = `${progress}%`;
+
+        qData.options.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = 'option-btn';
+            btn.innerText = opt.t;
+            btn.onclick = () => handleAnswer(opt.s);
+            list.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(score) {
+        totalScore += score;
+        currentQIndex++;
+
+        if (currentQIndex < questions.length) {
+            // 简单动画效果：先淡出再淡入（这里简化处理直接切题）
+            renderQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quizScreen').style.display = 'none';
+        document.getElementById('resultScreen').style.display = 'flex';
+
+        // 1. 计算百分比分数 (0-100)
+        // 实际得分区间是 [35, 175]，我们需要映射到 [0, 100]
+        // 公式：(实际分 - 最低分) / (最高分 - 最低分) * 100
+        let percentage = Math.round(((totalScore - MIN_POSSIBLE_SCORE) / (MAX_POSSIBLE_SCORE - MIN_POSSIBLE_SCORE)) * 100);
+        // 修正边界，避免出现负数或超100（虽理论不会）
+        if(percentage < 0) percentage = 0;
+        if(percentage > 100) percentage = 100;
+
+        // 2. 查找档位
+        let tier = results.find(r => percentage <= r.max);
+        if (!tier) tier = results[results.length - 1]; // 保底
+
+        // 3. 渲染文字
+        document.getElementById('finalScore').innerText = percentage;
+        document.getElementById('resultTitle').innerText = tier.title;
+        document.getElementById('resultDesc').innerText = tier.desc;
+        document.getElementById('resultSolution').innerText = tier.sol;
+
+        // 4. 渲染圆环动画
+        setTimeout(() => {
+            const circle = document.getElementById('circleProgress');
+            const circumference = 2 * Math.PI * 70; // r=70
+            const offset = circumference - (percentage / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            
+            // 根据分数变色
+            if(percentage < 40) circle.style.stroke = '#00f3ff'; // 蓝
+            else if(percentage < 70) circle.style.stroke = '#ffbd00'; // 黄
+            else circle.style.stroke = '#ff0055'; // 红/粉
+        }, 100);
+    }
+</script>
+
+</body>
+</html>
